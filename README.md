@@ -1,6 +1,29 @@
+
 # Vision-Scan: Neural Vision Pipeline for PCB Anomaly Detection
 
-End-to-end deep learning pipeline for detecting six types of defects on Printed Circuit Boards: open, short, mousebite, spur, copper, and pin-hole. Built as the final project for CS 7367 Machine Vision at Kennesaw State University, Spring 2026.
+Automated visual inspection of Printed Circuit Boards using deep learning. Detects six classes of manufacturing defects (open, short, mousebite, spur, copper, pin-hole) on the DeepPCB benchmark, reaching **0.983 mAP@0.5** at **99 FPS** on a single NVIDIA T4 GPU.
+
+## Why this matters
+
+PCB inspection is the bottleneck in modern electronics manufacturing. Manual microscope inspection misses over 20% of defects on high-volume lines, and rule-based Automated Optical Inspection (AOI) systems generate so many false positives that operators end up running secondary manual reviews anyway. Deep learning offers a path past both limits, but the published research rarely ships a deployable artifact: training notebooks without exported weights, accuracy numbers without latency measurements, and benchmarks without reproducibility. Vision-Scan closes that gap.
+
+## What it does
+
+The pipeline runs in three stages:
+
+1. **Synthetic augmentation** — expands a 1,050-image training set roughly four-fold using rotation, flipping, brightness shifts, Gaussian noise, and Gaussian blur. Bounding boxes are transformed consistently with the images so detection labels stay valid.
+2. **YOLOv8 fine-tuning** — transfer-learns a YOLOv8s detector from COCO-pretrained weights using AdamW, mixed-precision FP16 training, and cosine learning rate decay. Early stopping triggers when validation mAP plateaus.
+3. **ONNX export** — converts the trained PyTorch weights to ONNX with opset 12 and graph simplification, producing a portable model that runs on CPU, CUDA, or OpenVINO targets through ONNX Runtime.
+
+Every stage produces inspectable artifacts. Every metric reported in the paper has a script that generates it. The full pipeline runs end-to-end on a single Kaggle T4 notebook in under three hours.
+
+## Tech stack
+
+PyTorch 2.10 · Ultralytics YOLOv8 · Albumentations · ONNX Runtime · OpenCV · DeepPCB dataset
+
+## Project context
+
+Final project for CS 7367 Machine Vision at Kennesaw State University, Spring 2026. The full IEEE-format report is available in [`docs/Vision_Scan_Report.pdf`](docs/Vision_Scan_Report.pdf).
 
 ---
 
